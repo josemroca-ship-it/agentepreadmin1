@@ -1,70 +1,207 @@
-<style>
-  :root {
-    --w: 1000px;
-    --card-bg: rgba(255,255,255,0.06);
-    --card-border: rgba(255,255,255,0.12);
-    --text: #e8eef7;
-    --muted: #a9b4c0;
-    --brand: #4cc2ff;
-  }
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>AI Megafy Health</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  * { box-sizing: border-box; }
-  html, body { height: 100%; }
+  <!-- Carga del Web Component de ChatKit -->
+  <script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" defer></script>
 
-  body {
-    margin: 0;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans";
-    color: var(--text);
-    /* 🔷 Fondo aclarado */
-    background:
-      radial-gradient(1200px 600px at 10% -10%, #ffffff 30%, transparent 60%),
-      radial-gradient(1200px 700px at 110% 20%, #f5f8ff 30%, transparent 50%),
-      linear-gradient(180deg, #ffffff 0%, #f2f4f8 100%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-    padding: 24px;
-  }
+  <style>
+    :root {
+      --w: 1000px;
+      --card-bg: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.12);
+      --text: #e8eef7;
+      --muted: #a9b4c0;
+      --brand: #4cc2ff;
+    }
 
-  /* Header */
-  .header {
-    width: 100%;
-    max-width: var(--w);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
 
-  /* 🔧 Fondo oscuro restaurado en el bloque superior */
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 16px;
-    border-radius: 14px;
-    background: linear-gradient(180deg, #0b1b2f 0%, #0a1422 100%);
-    border: 1px solid rgba(255,255,255,0.12);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
-  }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans";
+      color: var(--text);
+      /* 🔷 Fondo aclarado */
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #ffffff 30%, transparent 60%),
+        radial-gradient(1200px 700px at 110% 20%, #f5f8ff 30%, transparent 50%),
+        linear-gradient(180deg, #ffffff 0%, #f2f4f8 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding: 24px;
+    }
 
-  .brand img {
-    height: 40px;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
-  }
+    /* Header */
+    .header {
+      width: 100%;
+      max-width: var(--w);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
 
-  .brand h1 {
-    margin: 0;
-    font-size: 1.25rem;
-    letter-spacing: .2px;
-    font-weight: 600;
-    color: #e8eef7;
-  }
+    /* 🔧 Fondo oscuro restaurado en el bloque superior */
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #0b1b2f 0%, #0a1422 100%);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
 
-  .sub {
-    color: #a9b4c0;
-    font-size: .95rem;
-  }
+    .brand img {
+      height: 40px;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+    }
 
-  /* El resto igual... */
-</style>
+    .brand h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: .2px;
+      font-weight: 600;
+      color: #e8eef7;
+    }
+
+    .sub {
+      color: #a9b4c0;
+      font-size: .95rem;
+    }
+
+    /* Card contenedora del chat */
+    .card {
+      width: 100%;
+      max-width: var(--w);
+      border-radius: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      box-shadow:
+        0 20px 60px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+      backdrop-filter: blur(6px);
+      padding: 16px;
+    }
+
+    /* Barra superior de la card */
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 6px 12px;
+    }
+
+    .status {
+      font-size: .9rem;
+      color: var(--muted);
+    }
+
+    .status .dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 8px;
+      background: #11d47b;
+      box-shadow: 0 0 10px #11d47b55;
+    }
+
+    .badge {
+      font-size: .8rem;
+      color: #07131f;
+      background: linear-gradient(180deg, #7dd3ff, #52b8ff);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+
+    /* Host del ChatKit (modo embebido) */
+    openai-chatkit {
+      display: block;
+      width: 100%;
+      height: clamp(520px, 70vh, 720px);
+      border-radius: 12px;
+      background: rgba(1,7,16,0.45);
+      border: 1px solid rgba(255,255,255,0.12);
+      overflow: clip;
+    }
+
+    /* Footer */
+    .footer {
+      width: 100%;
+      max-width: var(--w);
+      text-align: center;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 560px) {
+      .brand h1 { font-size: 1.05rem; }
+      .sub { font-size: .85rem; }
+      body { padding: 16px; gap: 16px; }
+      .card { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header con logo -->
+  <div class="header">
+    <div class="brand">
+      <img src="https://megafy.net/wp-content/uploads/2022/06/logo-megafy-footer.png" alt="Logo Megafy" />
+      <div>
+        <h1>AI Megafy - Salud</h1>
+        <div class="sub">Tu copiloto inteligente, 24/7</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card con el chat embebido -->
+  <div class="card">
+    <div class="card-head">
+      <div class="status"><span class="dot"></span>Disponible</div>
+      <div class="badge">Beta</div>
+    </div>
+    <openai-chatkit id="chat"></openai-chatkit>
+  </div>
+
+  <div class="footer">Desarrollado con 🧠 x Megafy</div>
+
+  <script type="module">
+    // Esperamos a que el web component esté listo
+    await customElements.whenDefined('openai-chatkit');
+
+    // Token mínimo (usa tu Cloudflare Function /api/chatkit/start y /api/chatkit/refresh)
+    async function getClientSecret(existing) {
+      const url = existing ? "/api/chatkit/refresh" : "/api/chatkit/start";
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: existing ? JSON.stringify({ currentClientSecret: existing }) : null
+      });
+      if (!res.ok) throw new Error(`Token ${res.status}: ${await res.text()}`);
+      const { client_secret } = await res.json();
+      if (!client_secret) throw new Error("Sin client_secret");
+      return client_secret;
+    }
+
+    const chat = document.getElementById("chat");
+
+    // ✅ Config mínima para evitar incompatibilidades
+    chat.setOptions({
+      api: { getClientSecret },
+      locale: "es-ES"
+    });
+
+    // Logs útiles
+    chat.addEventListener('chatkit.ready', () => console.log('✅ chatkit.ready'));
+    chat.addEventListener('chatkit.error', (e) => console.error('❌ chatkit.error', e.detail || e));
+  </script>
+</body>
+</html>
